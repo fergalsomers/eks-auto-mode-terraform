@@ -203,3 +203,45 @@ resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSServicePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.cluster.name
 }
+
+
+#
+# EKS POD-IDENTITY Example (simpler than IRSA) 
+#
+
+# Define a policy that allows pods on EKS to assume role
+data "aws_iam_policy_document" "pod_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession"
+    ]
+  }
+}
+
+# Define a role and the policy controls which principals can assume it.  
+resource "aws_iam_role" "pod_s3_read" {
+  name               = "pod-s3-read"
+  assume_role_policy = data.aws_iam_policy_document.pod_assume_role.json
+}
+
+# Attach the S3 policy to the role
+resource "aws_iam_role_policy_attachment" "s3_read_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+  role       = aws_iam_role.pod_s3_read.name
+}
+
+# Associate the EKS POD with ServiceAccount example-sa - in namespace example can assume this role in this cluster
+resource "aws_eks_pod_identity_association" "example" {
+  cluster_name    = aws_eks_cluster.cluster.name
+  namespace       = "example"
+  service_account = "example-sa"
+  role_arn        = aws_iam_role.pod_s3_read.arn
+}

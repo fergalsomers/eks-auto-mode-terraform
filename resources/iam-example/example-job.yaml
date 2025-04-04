@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: example
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    kubernetes.io/enforce-mountable-secrets: "true"
+  name: example-sa
+  namespace: example
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-job
+  namespace: example
+spec:
+  template:
+    metadata:
+      labels:
+        app: example-job
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: example-sa
+      containers:
+      - image: amazon/aws-cli:latest
+        name: aws-cli
+        command: ["/bin/sh", "-c"]
+        args: ["aws sts get-caller-identity ; aws s3api list-buckets"]

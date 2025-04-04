@@ -58,6 +58,7 @@ aequenced carefully and iteratively. Try and maintain simplicity (esspecially if
 - [Verify Kubectl is setup](#verify-kubectl-is-setup)
 - [Deploy the sample deployment](#deploy-the-sample-deployment)
 - [To deploy public ingress](#to-deploy-public-ingress)
+- [To deploy the IAM example Kubernetes Job](#to-deploy-the-iam-example-kubernetes-job)
 - [To clean up](#to-clean-up)
 - [To Do](#to-do)
 - [References](#references)
@@ -87,7 +88,7 @@ This has best practices you can follow depending on your setup.
 
 The simplest / most direct (ok for testing) way is to get an ACCESS key for your user (either short-term or long-term) and configure it on the command line, e.g. 
 
-```
+```bash
 export AWS_ACCESS_KEY_ID=<SOME KEY ID>
 export AWS_SECRET_ACCESS_KEY=<SOME ACCESS KEY>
 ```
@@ -97,7 +98,7 @@ export AWS_SECRET_ACCESS_KEY=<SOME ACCESS KEY>
 
 Clone the repo and 
 
-```
+```bash
 git clone https://github.com/fergalsomers/eks-auto-mode-terraform
 cd eks-auto-mode-terraform/terraform
 
@@ -109,14 +110,14 @@ terraform apply
 
 You will need this to access the cluster
 
-```bas
+```bash
 aws eks --region $(terraform output -raw region) update-kubeconfig \
     --name $(terraform output -raw cluster_name)
 ```
 
 # Verify Kubectl is setup
 
-```
+```bash
 kubectl cluster-info
 ```
 
@@ -124,14 +125,14 @@ This should respond with a message `Kubernetes control plane is running at ... `
 
 # Deploy the sample deployment
 
-``` 
-kubectl apply -f ../resources/deployment.yaml
+``` bash
+kubectl apply -f ../resources/ingress-example/deployment.yaml
 kubectl get pods 
 ```
 
 This should start the pods, to verify, port-forward:
 
-```
+```bash
 kubectl port-forward service/service-hello-world 8080:80 
 ```
 
@@ -139,27 +140,53 @@ and point your browser at http://localhost:8080/ - if everything is OK it should
 
 # To deploy public ingress
 
-```
-kubectl apply -f ../resources/ingress.yaml
+```bash
+kubectl apply -f ../resources/ingress-example/ingress.yaml
 ```
 
 This will provision an ELB. You can get the public address using this command
 
-```
+```bash
 kubectl get ingress ingress-hello-world-public -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
 And you can curl the endpoint using the following
 
-```
+```bash
 curl -k `kubectl get ingress ingress-hello-world-public -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 ```
 
+# To deploy the IAM example Kubernetes Job
+
+```bash
+kubect deploy -f ../resources/iam-example/example-job.yaml
+```
+
+This will create the `example` namespace and a sample job that lists S3. 
+
+In order for this Job to `COMPLETE` correctly, the jobs's K8 ServiceAccount `example-sa` has been associated
+with the IAM role `pod-s3-read` (which grants S3 view access).  This uses terraform's
+[EKS pod-identity association](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association#cluster_name-2)
+resource to accomplish this. For more details see the terraform script in the [/terraform/main.tf](/terraform/main.tf).
+
+You can watch the status of the job as follows:
+
+```bash
+kubectl get job -n example -w
+```
+
+Press Control-C to exit out of this watch. 
+
+You can view the logs associated with the pods that run this job as follow:
+
+```bash
+kubectl logs -n example -l app=example-job
+```
 
 # To clean up
 
-```
-kubectl delete -f ../resources/
+```bash
+kubectl delete -k ../resources
 terraform destroy
 ```
 
