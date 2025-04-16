@@ -1,3 +1,6 @@
+# Note AutoMode includes AWS LoadBalancer Controller\
+# See features: https://docs.aws.amazon.com/eks/latest/userguide/automode.html#_features
+
 apiVersion: eks.amazonaws.com/v1
 kind: IngressClassParams
 metadata:
