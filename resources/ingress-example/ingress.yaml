@@ -24,7 +24,8 @@ kind: Ingress
 metadata:
   namespace: default
   name: ingress-hello-world-public
-  annotations:
+  annotations:  
+    # See https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/ingress/annotations/#annotations
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 spec:
