@@ -41,7 +41,7 @@ There is a lots of good information on this topic already, but to summarise: Whe
 
 So the state file is effectively terraforms memory. There are a couple of knock on consquences to this
 
-- Don't lose the state file! Back it up somewhere (e.g. S3). Alternatively use a hosted service (e.g. terraform enterprise).
+- Don't lose the state file! Back it up somewhere (e.g. configure [terraforn s3 backend](https://developer.hashicorp.com/terraform/language/backend/s3)). Alternatively use a hosted service (e.g. terraform enterprise).
 - Don't make changes outside of terraform to resources controlled by terraform. Terraform is brittle and cannot handle out-of-band changes. All it takes is for one spririted developer to make 'just one quick change via the console or CLI' and your existing terraform can no longer be applied. 
 - Keep your terraform simple. This includes as you evolve your terraform files over time. Terraform can handle many changes, but some it cannot, or at least they need to be 
 aequenced carefully and iteratively. Try and maintain simplicity (esspecially if you don't wan to have to have any downtime where you rip and replace a cluster).
