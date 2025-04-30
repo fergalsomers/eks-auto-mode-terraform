@@ -69,7 +69,7 @@ module "vpc" {
 resource "aws_eks_cluster" "cluster" {
   name     = local.cluster_name
   role_arn = aws_iam_role.cluster.arn
-  version  = "1.31"
+  #version  = "1.32"  // this is optional - so this will use the latest version
 
   access_config {
     authentication_mode = "API"
@@ -120,6 +120,11 @@ resource "aws_eks_cluster" "cluster" {
     aws_iam_role_policy_attachment.cluster_AmazonEKSVPCResourceController,  # added for lb
     aws_iam_role_policy_attachment.cluster_AmazonEKSServicePolicy,
   ]
+}
+
+resource "aws_eks_addon" "example" {
+  cluster_name = aws_eks_cluster.cluster.name
+  addon_name   = "metrics-server"
 }
 
 
