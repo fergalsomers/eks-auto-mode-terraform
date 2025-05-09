@@ -1,4 +1,4 @@
 resources:
 - ./iam-example/example-job.yaml
-- ./ingress-example/deployment.yaml
+- ./ingress-example/ingress-application
 - ./ingress-example/ingress.yaml

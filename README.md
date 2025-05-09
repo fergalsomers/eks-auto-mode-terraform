@@ -126,7 +126,7 @@ This should respond with a message `Kubernetes control plane is running at ... `
 # Deploy the sample deployment
 
 ``` bash
-kubectl apply -f ../resources/ingress-example/deployment.yaml
+kubectl apply -k ../resources/ingress-example/ingress-application
 kubectl get pods 
 ```
 
